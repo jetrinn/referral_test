@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:referral_test/src/data/providers.dart';
 import 'package:referral_test/src/features/campaigns/presentation/widgets/campaign_card.dart';
 import 'package:flutter_phosphor_icons/flutter_phosphor_icons.dart';
+import 'package:referral_test/src/domain/transaction.dart';
 
 class CampaignsScreen extends ConsumerWidget {
   const CampaignsScreen({super.key});
@@ -39,19 +40,30 @@ class CampaignsScreen extends ConsumerWidget {
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               userProfileAsyncValue.when(
-                                data: (user) => Text(
-                                  user.name,
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
-                                ),
-                                loading: () => const SizedBox(
-                                  height: 26,
-                                  width: 150,
-                                  child: LinearProgressIndicator(color: Color(0xFFE0E0E0)),
-                                ),
-                                error: (_, __) => Text(
-                                  'Guest',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
-                                ),
+                                data:
+                                    (user) => Text(
+                                      user.name,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(fontSize: 22),
+                                    ),
+                                loading:
+                                    () => const SizedBox(
+                                      height: 26,
+                                      width: 150,
+                                      child: LinearProgressIndicator(
+                                        color: Color(0xFFE0E0E0),
+                                      ),
+                                    ),
+                                error:
+                                    (_, __) => Text(
+                                      'Guest',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(fontSize: 22),
+                                    ),
                               ),
                             ],
                           ),
@@ -59,7 +71,10 @@ class CampaignsScreen extends ConsumerWidget {
                             backgroundColor: Color(0xFF14C699),
                             foregroundColor: Colors.white,
                             radius: 20,
-                            child: Text('AJ', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: Text(
+                              'AJ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),
@@ -70,9 +85,16 @@ class CampaignsScreen extends ConsumerWidget {
                           color: const Color(0xFFF5F6F8),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const TextField(
-                          decoration: InputDecoration(
-                            icon: Icon(PhosphorIcons.magnifying_glass, color: Colors.grey),
+                        child: TextField(
+                          onChanged: (value) {
+                            ref.read(searchQueryProvider.notifier).state =
+                                value;
+                          },
+                          decoration: const InputDecoration(
+                            icon: Icon(
+                              PhosphorIcons.magnifying_glass,
+                              color: Colors.grey,
+                            ),
                             border: InputBorder.none,
                             hintText: 'Search rewards or campaigns...',
                             hintStyle: TextStyle(color: Colors.grey),
@@ -85,15 +107,9 @@ class CampaignsScreen extends ConsumerWidget {
                         children: [
                           Text(
                             'Active Campaigns',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18),
-                          ),
-                          Text(
-                            'View All',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(fontSize: 18),
                           ),
                         ],
                       ),
@@ -107,28 +123,52 @@ class CampaignsScreen extends ConsumerWidget {
                   return SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return CampaignCard(
-                            campaign: campaigns[index],
-                            onJoin: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Joined ${campaigns[index].title}')),
-                              );
-                            },
-                          );
-                        },
-                        childCount: campaigns.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        return CampaignCard(
+                          campaign: campaigns[index],
+                          onJoin: () {
+                            final campaign = campaigns[index];
+                            ref
+                                .read(joinedCampaignsProvider.notifier)
+                                .joinCampaign(campaign.id);
+
+                            ref
+                                .read(userProfileProvider.notifier)
+                                .addPoints(50);
+
+                            final transaction = PointTransaction(
+                              id:
+                                  DateTime.now().millisecondsSinceEpoch
+                                      .toString(),
+                              title: 'Joined ${campaign.title}',
+                              date: DateTime.now(),
+                              points: 50,
+                            );
+                            ref
+                                .read(transactionsProvider.notifier)
+                                .addTransaction(transaction);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Joined ${campaign.title} (+50 pts)',
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }, childCount: campaigns.length),
                     ),
                   );
                 },
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (error, stack) => SliverFillRemaining(
-                  child: Center(child: Text('Error: $error')),
-                ),
+                loading:
+                    () => const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                error:
+                    (error, stack) => SliverFillRemaining(
+                      child: Center(child: Text('Error: $error')),
+                    ),
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],

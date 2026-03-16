@@ -5,6 +5,7 @@ import 'package:referral_test/src/features/membership/presentation/membership_sc
 import 'package:referral_test/src/features/points/presentation/points_screen.dart';
 import 'package:referral_test/src/features/referral/presentation/referral_screen.dart';
 import 'package:referral_test/src/presentation/main_shell.dart';
+import 'package:referral_test/src/features/transactions/presentation/transaction_history_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -36,6 +37,11 @@ final goRouter = GoRouter(
           builder: (context, state) => const PointsScreen(),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/transaction-history',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const TransactionHistoryScreen(),
     ),
   ],
 );

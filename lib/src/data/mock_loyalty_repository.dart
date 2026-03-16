@@ -1,5 +1,6 @@
 import 'package:referral_test/src/domain/campaign.dart';
 import 'package:referral_test/src/domain/user.dart';
+import 'package:referral_test/src/domain/transaction.dart';
 
 class MockLoyaltyRepository {
   UserProfile _currentUser = const UserProfile(

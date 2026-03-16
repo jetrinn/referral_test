@@ -17,6 +17,28 @@ class Campaign extends Equatable {
     required this.ctaText,
   });
 
+  factory Campaign.fromJson(Map<String, dynamic> json) {
+    return Campaign(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      imageUrl: json['imageUrl'],
+      tag: json['tag'],
+      ctaText: json['ctaText'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'tag': tag,
+      'ctaText': ctaText,
+    };
+  }
+
   @override
   List<Object?> get props => [id, title, description, imageUrl, tag, ctaText];
 }

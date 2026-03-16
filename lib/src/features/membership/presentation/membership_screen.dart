@@ -16,15 +16,22 @@ class MembershipScreen extends ConsumerWidget {
         title: const Text('Membership'),
         backgroundColor: Colors.white,
       ),
-      body: userState.when(
-        data: (user) {
-          if (!user.isMember) {
-            return _buildNonMemberView(context, ref);
-          }
-          return _buildMemberView(context, user.name, user.membershipLevel);
+      body: RefreshIndicator(
+        color: const Color(0xFF14C699),
+        onRefresh: () async {
+          ref.invalidate(userProfileProvider);
+          await Future.delayed(const Duration(milliseconds: 800));
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
+        child: userState.when(
+          data: (user) {
+            if (!user.isMember) {
+              return _buildNonMemberView(context, ref);
+            }
+            return _buildMemberView(context, user.name, user.membershipLevel);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, st) => Center(child: Text('Error: $e')),
+        ),
       ),
     );
   }

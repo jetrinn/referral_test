@@ -39,19 +39,3 @@ class UserProfile extends Equatable {
   List<Object?> get props => [id, name, referralCode, points, isMember, membershipLevel];
 }
 
-class PointTransaction extends Equatable {
-  final String id;
-  final String title;
-  final DateTime date;
-  final int points;
-
-  const PointTransaction({
-    required this.id,
-    required this.title,
-    required this.date,
-    required this.points,
-  });
-
-  @override
-  List<Object?> get props => [id, title, date, points];
-}

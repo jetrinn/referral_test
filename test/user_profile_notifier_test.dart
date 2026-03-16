@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:referral_test/src/data/mock_loyalty_repository.dart';
 import 'package:referral_test/src/data/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,9 +12,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
     );
 
     // Initial state is loading
@@ -23,7 +20,7 @@ void main() {
 
     // Wait for the async load to complete
     await Future.delayed(const Duration(milliseconds: 600));
-    
+
     // Check initial state after load
     final initialUserState = container.read(userProfileProvider).value;
     expect(initialUserState, isNotNull);

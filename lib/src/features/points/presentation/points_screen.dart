@@ -4,6 +4,7 @@ import 'package:flutter_phosphor_icons/flutter_phosphor_icons.dart';
 import 'package:referral_test/src/data/providers.dart';
 import 'package:referral_test/src/domain/transaction.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 class PointsScreen extends ConsumerWidget {
   const PointsScreen({super.key});
@@ -25,67 +26,79 @@ class PointsScreen extends ConsumerWidget {
           )
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  userState.when(
-                    data: (user) => _buildBalanceCard(context, user.points),
-                    loading: () => const SizedBox(
-                      height: 180,
-                      child: Center(child: CircularProgressIndicator()),
+      body: RefreshIndicator(
+        color: const Color(0xFF14C699),
+        onRefresh: () async {
+          ref.invalidate(userProfileProvider);
+          ref.invalidate(transactionsProvider);
+          await Future.delayed(const Duration(milliseconds: 800));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    userState.when(
+                      data: (user) => _buildBalanceCard(context, user.points),
+                      loading: () => const SizedBox(
+                        height: 180,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (e, st) => Center(child: Text('Error: $e')),
                     ),
-                    error: (e, st) => Center(child: Text('Error: $e')),
-                  ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Transaction History',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18),
-                      ),
-                      Text(
-                        'See All',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Transaction History',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 18),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                        GestureDetector(
+                          onTap: () => context.push('/transaction-history'),
+                          child: Text(
+                            'See All',
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-          transactionsState.when(
-            data: (transactions) {
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return _buildTransactionItem(context, transactions[index]);
-                    },
-                    childCount: transactions.length,
+            transactionsState.when(
+              data: (transactions) {
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return _buildTransactionItem(context, transactions[index]);
+                      },
+                      childCount: transactions.length,
+                    ),
                   ),
-                ),
-              );
-            },
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, stack) => SliverFillRemaining(
+                child: Center(child: Text('Error: $error')),
+              ),
             ),
-            error: (error, stack) => SliverFillRemaining(
-              child: Center(child: Text('Error: $error')),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
-        ],
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        ),
       ),
     );
   }
